@@ -7,7 +7,7 @@ import DockerProxy from '../Utils/Interfaces/DockerProxy';
 export default class Server {
     private static app: Application;
     private static router: Router;
-    private static PORT: number = Number(3_000);
+    private static PORT: number = Number(3_001);
     public static init = async (): Promise<Application> => {
         return new Promise<Application>(async (resolve, reject) => {
             if (Server.app) {
@@ -25,7 +25,7 @@ export default class Server {
         const rp = request.params;
         const dockerProxy = await axios('/containers/json', {
             method: 'GET',
-            proxy: { port: 7805, host: '172.17.0.1' }, //localhost
+            proxy: { port: 7805, host: '127.0.0.1' }, //localhost
         });
 
         const dockerImages = dockerProxy.data as DockerImage[];
@@ -51,11 +51,13 @@ export default class Server {
 
         delete rp.proxy;
         delete rp[0];
-
-        let s = await axios(`${request.protocol}://${proxySetting.ip}:${proxySetting.ports.internal[0]}`, {
+        try {
+        } catch (error) {}
+        let s = await axios(`${request.protocol}://${rp.parameters}`, {
             params: rp,
             method: request.method.toLowerCase() as Method,
             data: request.body,
+            proxy: { port: proxySetting.ports.external[0], host: proxySetting.ip },
         });
 
         return response.send(s.data);
