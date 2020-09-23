@@ -51,16 +51,21 @@ export default class Server {
 
         delete rp.proxy;
         delete rp[0];
-        try {
-        } catch (error) {}
-        let s = await axios(`${request.protocol}://${rp.parameters}`, {
-            params: rp,
-            method: request.method.toLowerCase() as Method,
-            data: request.body,
-            proxy: { port: proxySetting.ports.external[0], host: proxySetting.ip },
-        });
 
-        return response.send(s.data);
+        let result: any;
+        try {
+            let s = await axios(`${request.protocol}://${rp.parameters}`, {
+                params: rp,
+                method: request.method.toLowerCase() as Method,
+                data: request.body,
+                proxy: { port: proxySetting.ports.external[0], host: proxySetting.ip },
+            });
+            result = s.data;
+        } catch (error) {
+            result = { error: { message: error } };
+        }
+
+        return response.send(result);
     };
     private static routes = async (): Promise<Router> => {
         return new Promise((resolve, reject) => {
