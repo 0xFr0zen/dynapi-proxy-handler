@@ -53,8 +53,11 @@ export default class Server {
         delete rp[0];
 
         let result: any;
+        let url = `${request.protocol}://${rp.parameters}`;
+        console.log(`Trying to request '${url}' via ${proxySetting.ip}:${proxySetting.ports.external[0]}`);
         try {
-            let s = await axios(`${request.protocol}://${rp.parameters}`, {
+            let s = await axios({
+                url,
                 params: rp,
                 method: request.method.toLowerCase() as Method,
                 data: request.body,
