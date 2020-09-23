@@ -62,6 +62,7 @@ export default class Server {
             });
             result = s.data;
         } catch (error) {
+            console.log(error);
             result = { error: { message: error } };
         }
 
