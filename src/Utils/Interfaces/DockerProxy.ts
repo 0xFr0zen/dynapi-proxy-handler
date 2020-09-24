@@ -4,6 +4,6 @@ export default interface DockerProxy {
     ports: DockerProxyPortConfig;
 }
 export interface DockerProxyPortConfig {
-    internal: Array<number | null>;
+    internal?: Array<number | null>;
     external: Array<number | null>;
 }

@@ -38,9 +38,6 @@ export default class Server {
                     ip: di.NetworkSettings.Networks.bridge.Gateway,
                     ports: {
                         external: di.Ports.filter((p) => typeof p.PublicPort !== 'undefined').map((p) => p.PublicPort),
-                        internal: di.Ports.filter((p) => typeof p.PrivatePort !== 'undefined').map(
-                            (p) => p.PrivatePort
-                        ),
                     },
                 } as DockerProxy;
             });
