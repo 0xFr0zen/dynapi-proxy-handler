@@ -35,7 +35,7 @@ export default class Server {
             })
             .map((di) => {
                 return {
-                    ip: di.NetworkSettings.Networks.bridge.IPAddress,
+                    ip: di.NetworkSettings.Networks.bridge.Gateway,
                     ports: {
                         external: di.Ports.filter((p) => typeof p.PublicPort !== 'undefined').map((p) => p.PublicPort),
                         internal: di.Ports.filter((p) => typeof p.PrivatePort !== 'undefined').map(
@@ -49,7 +49,7 @@ export default class Server {
         }
         const { ports } = foundProxySettings[0];
         const res = await axios({
-            url: `0.0.0.0:${ports.external[0]}/${rp.parameters ?  rp.parameters : ''}`,
+            url: `0.0.0.0:${ports.external[0]}/${rp.parameters ? rp.parameters : ''}`,
             data: request.body ? request.body : {},
         });
         return response.send(res.data);
