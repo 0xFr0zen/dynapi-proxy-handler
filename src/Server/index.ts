@@ -47,18 +47,16 @@ export default class Server {
         if (foundProxySettings.length < 1) {
             throw Error('This proxy couldnt be found');
         }
-        const { ip, ports } = foundProxySettings[0];
+        const { ports } = foundProxySettings[0];
         const { external, internal } = ports;
 
-        let url = `${ip}:${external[0]}/${rp.parameters}`;
-        console.log(`Trying to connect to ${url}`);
         axios.interceptors.request.use((req: AxiosRequestConfig) => {
-            req.proxy = { host: ip, port: external[0] };
+            req.proxy = { host: '0.0.0.0', port: external[0] };
             return req;
         });
         const res = await axios({
-            url: `localhost:${internal[0]}`,
-            data: request.body ? request.body : '',
+            url: `${rp.parameters ? '/' + rp.parameters : ''}`,
+            data: request.body ? request.body : {},
         });
         return response.send(res.data);
     };
