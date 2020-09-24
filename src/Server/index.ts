@@ -50,6 +50,13 @@ export default class Server {
         const res = await axios({
             url,
             data: request.body ? request.body : {},
+            method: request.method as Method,
+            onUploadProgress: (progress) => {
+                console.log(progress);
+            },
+            onDownloadProgress: (progress) => {
+                console.log(progress);
+            },
         });
         return response.send(res.data);
     };
