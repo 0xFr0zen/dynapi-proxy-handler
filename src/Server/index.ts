@@ -56,7 +56,10 @@ export default class Server {
             req.proxy = { host: ip, port: external[0] };
             return req;
         });
-        const res = await axios({ data: request.body ? request.body : '' });
+        const res = await axios({
+            url: `${rp.parameters ? rp.parameters : ''}`,
+            data: request.body ? request.body : '',
+        });
         return response.send(res.data);
     };
     private static routes = async (): Promise<Router> => {
