@@ -1,8 +1,8 @@
 import express, { Application, Router, Request, Response } from 'express';
 import axios, { Method } from 'axios';
-import createDockerProxy from '../Utils/Interfaces/DockerProxy';
 import { DockerImage } from '../Utils/Interfaces/IDocker';
 import DockerProxy from '../Utils/Interfaces/DockerProxy';
+import Constants from '../Utils/constants';
 
 export default class Server {
     private static app: Application;
@@ -25,7 +25,7 @@ export default class Server {
         const rp = request.params;
         const dockerProxy = await axios('/containers/json', {
             method: 'GET',
-            proxy: { port: 7805, host: '127.0.0.1' }, //localhost
+            proxy: Constants.Docker,
         });
 
         const dockerImages = dockerProxy.data as DockerImage[];
@@ -53,20 +53,22 @@ export default class Server {
         delete rp[0];
 
         let result: any;
-        let url = `${request.protocol}://${rp.parameters}`;
+        console.log(request.body);
+        let url = `${request.protocol}://${proxySetting.ip}:${proxySetting.ports.external[0]}/${rp.parameters}`;
         console.log(`Trying to request '${url}' via ${proxySetting.ip}:${proxySetting.ports.external[0]}`);
         try {
             let s = await axios({
                 url,
                 params: rp,
                 method: request.method.toLowerCase() as Method,
-                data: request.body,
+                data: request.body ? request.body : '',
                 proxy: { port: proxySetting.ports.external[0], host: proxySetting.ip },
             });
             result = s.data;
         } catch (error) {
-            console.log(error);
-            result = { error: { message: error } };
+            error = error as TypeError;
+            const { message, stack } = error;
+            result = { error: { message, stack: stack.split('\n') } };
         }
 
         return response.send(result);
