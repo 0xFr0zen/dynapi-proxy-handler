@@ -28,40 +28,46 @@ export default class Server {
             method: 'GET',
             proxy: Constants.Docker,
         });
-
-        const foundProxySettings = (dockerProxy.data as DockerImage[])
-            .filter((di) => {
-                return di.Names.filter((name) => name === `/${rp.proxy}`).length === 1;
-            })
-            .map((di) => {
-                return {
-                    ip: di.Ports.filter((p) => typeof p.IP !== 'undefined').map((p) => p.IP)[0],
-                    ports: {
-                        external: di.Ports.filter((p) => typeof p.PublicPort !== 'undefined').map((p) => p.PublicPort),
-                    },
-                } as DockerProxy;
+        if (rp.proxy.includes(':')) {
+            let [image, portindex] = rp.proxy.split(':');
+            const foundProxySettings = (dockerProxy.data as DockerImage[])
+                .filter((di) => {
+                    return di.Names.filter((name) => name === `/${image}`).length === 1;
+                })
+                .map((di) => {
+                    return {
+                        ip: di.Ports.filter((p) => typeof p.IP !== 'undefined').map((p) => p.IP)[portindex],
+                        ports: {
+                            external: di.Ports.filter((p) => typeof p.PublicPort !== 'undefined').map(
+                                (p) => p.PublicPort
+                            ),
+                        },
+                    } as DockerProxy;
+                });
+            if (foundProxySettings.length < 1) {
+                throw Error('This proxy couldnt be found');
+            }
+            const { ip, ports } = foundProxySettings[0];
+            let url = `${ip}:${ports.external[0]}/${rp.parameters ? rp.parameters : ''}`;
+            console.log(`created url: ${url}`);
+            const res = await axios({
+                url,
+                data: request.body ? request.body : {},
+                method: request.method as Method,
+                onUploadProgress: (progress) => {
+                    console.log(progress);
+                },
+                onDownloadProgress: (progress) => {
+                    console.log(progress);
+                },
+                proxy: false,
             });
-        if (foundProxySettings.length < 1) {
-            throw Error('This proxy couldnt be found');
-        }
-        const { ip, ports } = foundProxySettings[0];
-        let url = `${ip}:${ports.external[0]}/${rp.parameters ? rp.parameters : ''}`;
-        console.log(`created url: ${url}`);
-        const res = await axios({
-            url,
-            data: request.body ? request.body : {},
-            method: request.method as Method,
-            onUploadProgress: (progress) => {
-                console.log(progress);
-            },
-            onDownloadProgress: (progress) => {
-                console.log(progress);
-            },
-            proxy: false,
-        });
-        // those requests wont work properly, need to check why, image ip and port is alright
+            // those requests wont work properly, need to check why, image ip and port is alright
 
-        return response.send(res.data);
+            return response.send(res.data);
+        } else {
+            return response.status(404).json({ error: { message: 'Couldnt find this endpoint' } });
+        }
     };
     private static routes = async (): Promise<Router> => {
         return new Promise((resolve, reject) => {
