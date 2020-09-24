@@ -50,7 +50,7 @@ export default class Server {
         const { ip, ports } = foundProxySettings[0];
         const { external, internal } = ports;
 
-        let url = `${request.protocol}://${ip}:${external[0]}/${rp.parameters}`;
+        let url = `${ip}:${external[0]}/${rp.parameters}`;
 
         return url;
     };
@@ -69,8 +69,8 @@ export default class Server {
                 });
                 mainR.use('/:parameters(*)$', async (req: Request, res: Response) =>
                     proxy(await Server.RequestResponseHandler(req, res), {
-                        timeout: 15,
-                        proxyErrorHandler: function (err, res, next) {
+                        // timeout: 15,
+                        proxyErrorHandler: (err, res, next) => {
                             switch (err && err.code) {
                                 case 'ECONNRESET': {
                                     return res.status(504).json({ error: { message: 'Connection reset' } });
