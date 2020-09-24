@@ -57,7 +57,7 @@ export default class Server {
             return req;
         });
         const res = await axios({
-            url: `${rp.parameters ? rp.parameters : ''}`,
+            url: `localhost:${internal[0]}`,
             data: request.body ? request.body : '',
         });
         return response.send(res.data);
