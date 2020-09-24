@@ -35,7 +35,7 @@ export default class Server {
             })
             .map((di) => {
                 return {
-                    ip: di.Ports.map((p) => p.IP)[0],
+                    ip: di.Ports.filter((p) => typeof p.IP !== 'undefined').map((p) => p.IP)[0],
                     ports: {
                         external: di.Ports.filter((p) => typeof p.PublicPort !== 'undefined').map((p) => p.PublicPort),
                     },
