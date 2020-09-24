@@ -35,7 +35,7 @@ export default class Server {
             })
             .map((di) => {
                 return {
-                    ip: di.NetworkSettings.Networks.bridge.Gateway,
+                    ip: di.Ports.map((p) => p.IP)[0],
                     ports: {
                         external: di.Ports.filter((p) => typeof p.PublicPort !== 'undefined').map((p) => p.PublicPort),
                     },
@@ -59,6 +59,8 @@ export default class Server {
             },
             proxy: false,
         });
+        // those requests wont work properly, need to check why, image ip and port is alright
+
         return response.send(res.data);
     };
     private static routes = async (): Promise<Router> => {
