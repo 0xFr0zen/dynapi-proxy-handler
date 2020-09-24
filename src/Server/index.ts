@@ -1,5 +1,5 @@
 import express, { Application, Router, Request, Response, NextFunction } from 'express';
-import axios, { Method } from 'axios';
+import axios, { AxiosRequestConfig, Method } from 'axios';
 import proxy from 'express-http-proxy';
 import { DockerImage } from '../Utils/Interfaces/IDocker';
 import DockerProxy from '../Utils/Interfaces/DockerProxy';
@@ -22,7 +22,7 @@ export default class Server {
             });
         });
     };
-    private static RequestResponseHandler = async (request: Request, response: Response): Promise<string> => {
+    private static RequestResponseHandler = async (request: Request, response: Response): Promise<any> => {
         const rp = request.params;
         const dockerProxy = await axios('/containers/json', {
             method: 'GET',
@@ -52,7 +52,12 @@ export default class Server {
 
         let url = `${ip}:${external[0]}/${rp.parameters}`;
         console.log(`Trying to connect to ${url}`);
-        return url;
+        axios.interceptors.request.use((req: AxiosRequestConfig) => {
+            req.proxy = { host: ip, port: external[0] };
+            return req;
+        });
+        const res = await axios({ data: request.body ? request.body : '' });
+        return response.send(res.data);
     };
     private static routes = async (): Promise<Router> => {
         return new Promise((resolve, reject) => {
@@ -67,23 +72,9 @@ export default class Server {
                     strict: true,
                     caseSensitive: true,
                 });
-                mainR.use('/:parameters(*)$', async (req: Request, res: Response) =>
-                    proxy(await Server.RequestResponseHandler(req, res), {
-                        // timeout: 15,
-                        proxyErrorHandler: (err, res, next) => {
-                            switch (err && err.code) {
-                                case 'ECONNRESET': {
-                                    return res.status(504).json({ error: { message: 'Connection reset' } });
-                                }
-                                case 'ECONNREFUSED': {
-                                    return res.status(502).json({ error: { message: 'Connection refused' } });
-                                }
-                                default: {
-                                    next(err);
-                                }
-                            }
-                        },
-                    })
+                mainR.use(
+                    '/:parameters(*)$',
+                    async (req: Request, res: Response) => await Server.RequestResponseHandler(req, res)
                 );
                 router.use('/:proxy([a-zA-Z0-9_\\-]+)', mainR);
                 resolve(router);
