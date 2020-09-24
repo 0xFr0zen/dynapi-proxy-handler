@@ -51,7 +51,7 @@ export default class Server {
         const { external, internal } = ports;
 
         let url = `${ip}:${external[0]}/${rp.parameters}`;
-
+        console.log(`Trying to connect to ${url}`);
         return url;
     };
     private static routes = async (): Promise<Router> => {
