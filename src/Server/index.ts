@@ -54,15 +54,19 @@ export default class Server {
 
         let result: any;
         console.log(request.body);
-        let url = `${request.protocol}://${proxySetting.ip}:${proxySetting.ports.external[0]}/${rp.parameters}`;
-        console.log(`Trying to request '${url}' via ${proxySetting.ip}:${proxySetting.ports.external[0]}`);
+
+        const { ip, ports } = proxySetting;
+        const { external, internal } = ports;
+
+        let url = `${request.protocol}://${ip}:${external[0]}/${rp.parameters}`;
+        console.log(`Trying to request '${url}' via ${ip}:${external[0]}`);
         try {
             let s = await axios({
                 url,
                 params: rp,
                 method: request.method.toLowerCase() as Method,
                 data: request.body ? request.body : '',
-                proxy: { port: proxySetting.ports.external[0], host: proxySetting.ip },
+                proxy: Constants.Docker,
             });
             result = s.data;
         } catch (error) {
