@@ -45,8 +45,10 @@ export default class Server {
             throw Error('This proxy couldnt be found');
         }
         const { ip, ports } = foundProxySettings[0];
+        let url = `${ip}:${ports.external[0]}/${rp.parameters ? rp.parameters : ''}`;
+        console.log(`created url: ${url}`);
         const res = await axios({
-            url: `${ip}:${ports.external[0]}/${rp.parameters ? rp.parameters : ''}`,
+            url,
             data: request.body ? request.body : {},
         });
         return response.send(res.data);
