@@ -57,6 +57,7 @@ export default class Server {
             onDownloadProgress: (progress) => {
                 console.log(progress);
             },
+            proxy: false,
         });
         return response.send(res.data);
     };
